@@ -29,6 +29,7 @@ using ProgressMeter
 using Statistics
 using Suppressor
 using UnicodePlots
+using CUDA
 import Flux.Zygote: ignore_derivatives
 
 

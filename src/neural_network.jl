@@ -218,7 +218,7 @@ function train(f::Chain, solver::BetaZeroSolver; verbose::Bool=false, results=no
         n = size(ỹ,1)-1
         vmask = vcat(1, zeros(Int,n))
         if device == gpu
-            vmask = Flux.CuArray(vmask)
+            vmask = CuArray(vmask)
         end
         pmask = 1 .- vmask
         v = vmask .* ỹ # value prediction
@@ -485,7 +485,7 @@ function train(f::Chain, solver::BetaZeroSolver; verbose::Bool=false, results=no
         x_train = y_train = x_valid = y_valid = nothing
         GC.gc()
         if device == gpu
-            Flux.CUDA.reclaim()
+            CUDA.reclaim()
         end
     end
 

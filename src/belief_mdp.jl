@@ -22,7 +22,7 @@ function POMDPs.gen(bmdp::BeliefMDP, b, a, rng::AbstractRNG)
         return (sp=bp, r=0.0)
     end
     sp, o = @gen(:sp, :o)(bmdp.pomdp, s, a, rng)
-    bp = update(bmdp.updater, b, a, o)
+    bp = POMDPs.update(bmdp.updater, b, a, o)
     r = bmdp.belief_reward(bmdp.pomdp, b, a, bp)
     return (sp=bp, r=r)
 end
@@ -42,7 +42,7 @@ function bmdp_handle_terminal(pomdp::POMDP, updater::Updater, b, s, a, rng)
          See $(@__FILE__) and implement a new method of POMDPToolbox.bmdp_handle_terminal if you want special behavior in this case.
          """, maxlog=1)
     sp, o, r = @gen(:sp, :o, :r)(pomdp, s, a, rng)
-    bp = update(updater, b, a, o)
+    bp = POMDPs.update(updater, b, a, o)
     return bp
 end
 
