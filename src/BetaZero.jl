@@ -30,6 +30,7 @@ using Statistics
 using Suppressor
 using UnicodePlots
 using CUDA
+using Debugger
 import Flux.Zygote: ignore_derivatives
 
 
@@ -419,7 +420,14 @@ function generate_data(pomdp::POMDP, solver::BetaZeroSolver, f::Surrogate;
         # @info "Generating data ($i/$(inner_iter)) with seed ($seed)"
         ds0 = initialstate(pomdp)
         s0 = rand(ds0)
+        while(POMDPs.isterminal(pomdp, s0))
+            s0 = rand(ds0)
+        end
         b0 = initialize_belief(up, ds0)
+        # println(b0)
+        # println("*************************************************************")
+        # println(s0)
+        # println("*************************************************************")
         data, metrics = run_simulation(pomdp, planner, up, b0, s0; collect_metrics, include_info, max_steps, skip_missing_reward_signal, train_missing_on_predicted, final_criterion, use_completed_policy_gumbel, nn_params)
         if ismissing(data) && ismissing(metrics)
             # ignore missing data
@@ -672,6 +680,11 @@ function run_simulation(pomdp::POMDP, policy::POMDPs.Policy, up::POMDPs.Updater,
         end
 
         max_reached = (T == max_steps)
+        # println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        # println(bp)
+        # println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+        # println(sp)
+        # println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
     end
 
     data[end].π = deepcopy(data[end-1].π) # terminal state, copy policy vector.

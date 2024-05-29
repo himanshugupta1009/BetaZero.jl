@@ -20,6 +20,18 @@ function POMDPTools.action_info(p::PUCTPlanner, s; tree_in_info=false, counts_in
     info = Dict{Symbol, Any}()
     try
         if isterminal(p.mdp, s)
+            # println(s)
+            # println("##################################################################")
+            # println(typeof(s))
+            # println("##################################################################")
+            # # println(length(s))
+            # Debugger.@enter isterminal(p.mdp, s)
+            # println("##################################################################")
+            # println("""
+            #         MCTS cannot handle terminal states. action was called with
+            #         s = $s
+            #         """)
+            # return rand(actions(p.mdp)), info
             error("""
                   MCTS cannot handle terminal states. action was called with
                   s = $s
