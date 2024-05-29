@@ -598,12 +598,13 @@ function tune_network_parameters(pomdp::POMDP, solver::BetaZeroSolver;
                                  λs=[0, 0.1, 0.005, 0.001, 0.0001],
                                  loss_funcs=[Flux.Losses.mae, Flux.Losses.mse],
                                  normalize_outputs=[true, false])
-    _use_random_policy_data_gen = solver.use_random_policy_data_gen # save original setting
-    solver.use_random_policy_data_gen = true
+    # _use_random_policy_data_gen = solver.use_random_policy_data_gen # save original setting
+    # solver.use_random_policy_data_gen = true
     @info "Tuning using a random policy for data generation."
     results = Dict()
     N = sum(map(length, [learning_rates, λs, loss_funcs, normalize_outputs]))
     i = 1
+    rstats = RunningStats()
     for normalize_output in normalize_outputs
         for loss in loss_funcs
             for λ in λs
@@ -621,15 +622,18 @@ function tune_network_parameters(pomdp::POMDP, solver::BetaZeroSolver;
                     empty!(solver.data_buffer_train)
                     empty!(solver.data_buffer_valid)
                     f_prev = initialize_network(solver)
-                    generate_data!(pomdp, solver, f_prev; use_random_policy=solver.use_random_policy_data_gen, inner_iter=solver.n_data_gen, outer_iter=1)
-                    f_curr = train(deepcopy(f_prev), solver; verbose=solver.verbose, results=results)
-
+                    # generate_data!(pomdp, solver, f_prev; use_random_policy=solver.use_random_policy_data_gen, inner_iter=solver.n_data_gen, outer_iter=1)
+                    data, metrics = generate_data(pomdp, solver, f_prev; use_different_policy=solver.use_data_collection_policy, inner_iter=solver.params.n_data_gen, outer_iter=1)
+                    store_data!(solver, data)
+                    store_metrics!(solver, metrics)
+                    # f_curr = train(deepcopy(f_prev), solver; verbose=solver.verbose, results=results)
+                    f_curr = train(deepcopy(f_prev), solver; rstats, verbose=solver.verbose)
                     key = (lr, λ, loss_str, normalize_output)
-                    results[key]["network"] = f_curr
+                    results[key] = f_curr
                 end
             end
         end
     end
-    solver.use_random_policy_data_gen = _use_random_policy_data_gen # reset to original setting
+    # solver.use_random_policy_data_gen = _use_random_policy_data_gen # reset to original setting
     return results
 end
